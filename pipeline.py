@@ -11,6 +11,7 @@ import json
 import re
 from dataclasses import dataclass
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, cast
 
@@ -45,6 +46,7 @@ NORMALIZED_LEAD_COLUMNS = (
     "full_name",
     "first_name",
     "last_name",
+    "raw_email",
     "email",
     "title",
     "company",
@@ -119,6 +121,9 @@ FREE_EMAIL_DOMAINS = {
 }
 
 
+COUNTRY_MAPPINGS_PATH = Path(__file__).resolve().with_name("country_mappings.json")
+
+
 @dataclass(slots=True)
 class PipelineResult:
     clean_leads: pd.DataFrame
@@ -154,6 +159,7 @@ def prepare_input_dataframe(raw_df: pd.DataFrame) -> pd.DataFrame:
 
     # Prepare the dataframe by selecting and renaming columns, and adding missing normalized lead columns
     prepared = cast(pd.DataFrame, raw_df[list(EXPECTED_INPUT_COLUMNS)]).copy()
+    prepared["raw_email"] = prepared["Email"]
     prepared = prepared.rename(columns=INPUT_TO_CANONICAL_COLUMN_MAP)
     # Add source_row_number as a unique identifier for each row in the original input dataframe
     prepared.insert(0, "source_row_number", range(1, len(prepared) + 1))
@@ -175,12 +181,13 @@ def normalize_leads(df: pd.DataFrame) -> pd.DataFrame:
     normalized = cast(pd.DataFrame, df.copy())
 
     normalized["full_name"] = normalized["full_name"].apply(normalize_text)
+    normalized["raw_email"] = normalized["raw_email"].apply(normalize_text)
     normalized["email"] = normalized["email"].apply(normalize_email)
     normalized["title"] = normalized["title"].apply(normalize_text)
     normalized["company"] = normalized["company"].apply(normalize_text)
     normalized["phone"] = normalized["phone"].apply(normalize_phone)
     normalized["source"] = normalized["source"].apply(normalize_text)
-    normalized["country"] = normalized["country"].apply(normalize_text)
+    normalized["country"] = normalized["country"].apply(normalize_country)
     normalized["lead_date"] = normalized["lead_date"].apply(normalize_date)
 
     split_names = normalized["full_name"].apply(split_full_name)
@@ -192,7 +199,20 @@ def normalize_leads(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def split_accepted_and_rejected(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    raise NotImplementedError("Step 1 scaffold only.")
+    with_status = cast(pd.DataFrame, df.copy())
+    with_status["drop_reason"] = with_status["email"].apply(
+        lambda email: None if has_non_empty_value(email) else "missing_or_invalid_email"
+    )
+
+    accepted_mask = with_status["drop_reason"].isna()
+    accepted = cast(pd.DataFrame, with_status.loc[accepted_mask, list(df.columns)].copy())
+    rejected_columns = [*df.columns, *REJECTION_METADATA_COLUMNS]
+    rejected = cast(
+        pd.DataFrame,
+        with_status.loc[~accepted_mask, rejected_columns].copy(),
+    )
+
+    return accepted, rejected
 
 
 def deduplicate_leads(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -241,6 +261,16 @@ def normalize_email(value: Any) -> str | None:
         return candidate
 
     return None
+
+
+def normalize_country(value: Any) -> str | None:
+    text = normalize_text(value)
+    if not text:
+        return None
+
+    alias_map = load_country_alias_map()
+    lookup_key = normalize_country_lookup_key(text)
+    return alias_map.get(lookup_key, text)
 
 
 def split_full_name(value: Any) -> tuple[str | None, str | None]:
@@ -296,6 +326,39 @@ def normalize_date(value: Any) -> str | None:
     return parsed.date().isoformat()
 
 
+@lru_cache(maxsize=1)
+def load_country_alias_map() -> dict[str, str]:
+    with COUNTRY_MAPPINGS_PATH.open("r", encoding="utf-8") as handle:
+        country_entries = json.load(handle)
+
+    alias_map: dict[str, str] = {}
+    for entry in country_entries:
+        canonical_name = entry["canonical_name"]
+        alias_candidates = [
+            canonical_name,
+            entry.get("alpha2"),
+            entry.get("alpha3"),
+            *entry.get("aliases", []),
+        ]
+
+        for alias in alias_candidates:
+            if not alias:
+                continue
+            alias_map[normalize_country_lookup_key(alias)] = canonical_name
+
+    return alias_map
+
+
+def normalize_country_lookup_key(value: str) -> str:
+    normalized = value.casefold().strip()
+    normalized = normalized.replace("&", " and ")
+    normalized = re.sub(r"[.'’]", "", normalized)
+    normalized = normalized.replace("_", " ")
+    normalized = re.sub(r"[^\w\s]+", " ", normalized)
+    normalized = re.sub(r"\s+", " ", normalized)
+    return normalized.strip()
+
+
 def normalize_phone(value: Any) -> str | None:
     text = normalize_text(value)
     if not text:
@@ -337,3 +400,13 @@ def parse_slash_date(value: str) -> str | None:
         return datetime(year, month, day).date().isoformat()
     except ValueError:
         return None
+
+
+def has_non_empty_value(value: Any) -> bool:
+    if value is None:
+        return False
+    if pd.isna(value):
+        return False
+    if isinstance(value, str):
+        return value.strip() != ""
+    return True
