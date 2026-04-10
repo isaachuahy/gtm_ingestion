@@ -1,0 +1,156 @@
+{
+  "base_score": 0,
+  "score_bounds": {
+    "min": 0,
+    "max": 100
+  },
+  "title_function_scores": [
+    {
+      "name": "creative_operations",
+      "score": 18,
+      "keywords": [
+        "creative operations",
+        "creative ops",
+        "design ops",
+        "brand ops",
+        "studio operations",
+        "production operations",
+        "marketing operations"
+      ]
+    },
+    {
+      "name": "brand_and_creative_leadership",
+      "score": 16,
+      "keywords": [
+        "creative director",
+        "art director",
+        "design director",
+        "brand director",
+        "head of creative",
+        "head of brand"
+      ]
+    },
+    {
+      "name": "content_and_production",
+      "score": 14,
+      "keywords": [
+        "creative producer",
+        "content producer",
+        "producer",
+        "studio manager",
+        "production manager",
+        "content operations"
+      ]
+    },
+    {
+      "name": "marketing_and_campaigns",
+      "score": 12,
+      "keywords": [
+        "brand marketing",
+        "content marketing",
+        "performance marketing",
+        "campaign manager",
+        "growth marketing",
+        "demand generation"
+      ]
+    },
+    {
+      "name": "asset_management_and_workflows",
+      "score": 15,
+      "keywords": [
+        "digital asset manager",
+        "asset manager",
+        "dam",
+        "librarian",
+        "content librarian",
+        "workflow manager",
+        "approval manager"
+      ]
+    },
+    {
+      "name": "sales",
+      "score": 4,
+      "keywords": [
+        "sales",
+        "account executive",
+        "business development",
+        "sdr",
+        "bdr",
+        "revenue"
+      ]
+    },
+    {
+      "name": "engineering",
+      "score": 3,
+      "keywords": [
+        "engineer",
+        "developer",
+        "software",
+        "data"
+      ]
+    }
+  ],
+  "seniority_scores": [
+    {
+      "name": "executive",
+      "score": 20,
+      "keywords": [
+        "chief",
+        "ceo",
+        "cto",
+        "cfo",
+        "coo",
+        "cmo",
+        "cro",
+        "president",
+        "founder"
+      ]
+    },
+    {
+      "name": "vp_head_director",
+      "score": 15,
+      "keywords": [
+        "vp",
+        "vice president",
+        "head",
+        "director"
+      ]
+    },
+    {
+      "name": "manager_lead",
+      "score": 8,
+      "keywords": [
+        "manager",
+        "lead"
+      ]
+    }
+  ],
+  "company_size_scores": {
+    "enterprise": 15,
+    "mid_market": 10,
+    "small_business": 5,
+    "unknown": 0
+  },
+  "industry_scores": {
+    "retail": 12,
+    "ecommerce": 12,
+    "media": 10,
+    "entertainment": 10,
+    "agency": 10,
+    "consumer_goods": 9,
+    "fashion": 9,
+    "software": 8,
+    "saas": 8,
+    "technology": 7,
+    "education": 5,
+    "nonprofit": 5,
+    "healthcare": 4,
+    "manufacturing": 3,
+    "unknown": 0
+  },
+  "penalties": {
+    "free_email_domain": 5,
+    "missing_company": 8,
+    "failed_enrichment": 6
+  }
+}
