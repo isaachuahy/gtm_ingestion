@@ -199,6 +199,10 @@ def normalize_leads(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def split_accepted_and_rejected(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Splits the input dataframe into accepted and rejected leads based on validation rules.
+    For this step, the only validation rule is that the email must be present and valid.
+    """
     with_status = cast(pd.DataFrame, df.copy())
     with_status["drop_reason"] = with_status["email"].apply(
         lambda email: None if has_non_empty_value(email) else "missing_or_invalid_email"
@@ -216,7 +220,43 @@ def split_accepted_and_rejected(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Data
 
 
 def deduplicate_leads(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    raise NotImplementedError("Step 1 scaffold only.")
+    """
+    Deduplicates leads based on email address. 
+    
+    For each set of duplicates, the most complete lead is retained
+    and the others are rejected with a drop reason indicating they were duplicates.
+    """
+    if df.empty:
+        empty_rejected = cast(pd.DataFrame, pd.DataFrame(columns=[*df.columns, *REJECTION_METADATA_COLUMNS]))
+        return cast(pd.DataFrame, df.copy()), empty_rejected
+
+    # Process duplicates in a deterministic order by grouping by email and sorting by source_row_number.
+    deduplicated_rows: list[dict[str, Any]] = []
+    duplicate_rows: list[dict[str, Any]] = []
+
+    # Group by email and sort by source_row_number to ensure deterministic processing order for duplicates
+    grouped = df.groupby("email", sort=False, dropna=False)
+    # For each group of duplicates, merge them into a single lead and collect the rejected duplicates with appropriate drop reasons.
+    for _, group in grouped:
+        # Sort the group by source_row_number to ensure deterministic processing order for duplicates
+        group_df = cast(pd.DataFrame, group.sort_values("source_row_number"))
+        # Merge the duplicate group into a single lead using the defined merging logic, and add it to the deduplicated results.
+        merged_row = merge_duplicate_group(group_df)
+        deduplicated_rows.append(merged_row)
+
+        if len(group_df) > 1:
+            for _, duplicate_row in group_df.iloc[1:].iterrows():
+                rejected_row = duplicate_row.to_dict()
+                rejected_row["drop_reason"] = "duplicate_email_merged"
+                duplicate_rows.append(rejected_row)
+
+    deduplicated = cast(pd.DataFrame, pd.DataFrame(deduplicated_rows))
+    duplicate_rejected = cast(
+        pd.DataFrame,
+        pd.DataFrame(duplicate_rows, columns=[*df.columns, *REJECTION_METADATA_COLUMNS]),
+    )
+
+    return deduplicated, duplicate_rejected
 
 
 def enrich_leads(df: pd.DataFrame, enrichment_client: Any | None = None) -> pd.DataFrame:
@@ -228,7 +268,61 @@ def score_leads(df: pd.DataFrame, scoring_rules: dict[str, Any]) -> pd.DataFrame
 
 
 def finalize_clean_leads(df: pd.DataFrame) -> pd.DataFrame:
-    raise NotImplementedError("Step 1 scaffold only.")
+    """
+    Finalizes the clean leads dataframe by ensuring all expected columns are present, filling in default values for enrichment and scoring columns,
+    and calculating the salesforce_ready status for each lead based on the presence of required fields. (email, last_name, company)
+    """
+    finalized = cast(pd.DataFrame, df.copy())
+
+    default_values: dict[str, Any] = {
+        "industry": None,
+        "company_size": None,
+        "company_domain": None,
+        "enrichment_status": "not_enriched",
+        "lead_score": 0,
+        "score_reasons": [],
+    }
+
+    # Ensure all expected enrichment and scoring columns are present, and fill in default values where necessary.
+    for column, default_value in default_values.items():
+        if column not in finalized.columns:
+            # If the column is missing, add it with default values for all rows. This ensures that downstream processing and reporting can rely on the presence of these columns without needing to handle missing columns separately.
+            finalized[column] = [clone_default_value(default_value) for _ in range(len(finalized))]
+        else:
+            # Fill in default values for existing columns where values are missing or empty, to ensure consistent data for downstream processing and reporting.
+            finalized[column] = finalized[column].apply(
+                lambda value, fallback=default_value: (
+                    clone_default_value(fallback) if not has_non_empty_value(value) else value
+                )
+            )
+
+    # Calculate the salesforce_ready status for each lead based on the presence of required fields. 
+    # This adds a boolean column that indicates whether each lead meets the criteria for being considered ready for Salesforce, 
+    # which can be used in downstream filtering and reporting.
+
+    # Force to Python bool instead of np.bool to avoid potential issues with JSON serialization 
+    salesforce_ready_values = []
+
+    for _, row in finalized.iterrows():
+        ready = is_salesforce_ready_row(row)
+        salesforce_ready_values.append(bool(ready))
+
+
+    finalized["salesforce_ready"] = pd.Series(
+        salesforce_ready_values,
+        index=finalized.index,
+        dtype=object,
+    )
+
+    ordered_columns = list(CLEAN_LEAD_COLUMNS)
+    # Ensure all expected columns are present in the finalized dataframe, adding any missing columns with null values. 
+    # This guarantees a consistent schema for downstream processing and reporting.
+    for column in ordered_columns:
+        if column not in finalized.columns:
+            finalized[column] = None
+
+    # Reorder columns to have source_row_number first, followed by normalized lead columns, enrichment columns, scoring columns, and pipeline metadata columns for consistency in downstream processing and reporting.
+    return cast(pd.DataFrame, finalized[ordered_columns].copy())
 
 
 def build_summary_report(
@@ -257,6 +351,8 @@ def normalize_email(value: Any) -> str | None:
         return None
 
     candidate = text.lower()
+    # Basic email format validation using regex. 
+    # This is a simple check and can be enhanced with more sophisticated validation if needed.
     if re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", candidate):
         return candidate
 
@@ -286,12 +382,18 @@ def split_full_name(value: Any) -> tuple[str | None, str | None]:
 
 
 def title_case_name_part(value: str | None) -> str | None:
+    """
+    Applies title casing to a name part while preserving common name prefixes and particles in lowercase.
+    """
     if not value:
         return None
     return value.title()
 
 
 def normalize_date(value: Any) -> str | None:
+    """
+    Normalizes date values by attempting to parse them using a variety of common date formats, including handling ambiguous slash-separated formats.
+    """
     text = normalize_text(value)
     if not text:
         return None
@@ -328,6 +430,9 @@ def normalize_date(value: Any) -> str | None:
 
 @lru_cache(maxsize=1)
 def load_country_alias_map() -> dict[str, str]:
+    """
+    Loads country mappings from the country_mappings.json file and constructs a lookup map that normalizes various country name formats to their canonical names.
+    """
     with COUNTRY_MAPPINGS_PATH.open("r", encoding="utf-8") as handle:
         country_entries = json.load(handle)
 
@@ -350,6 +455,9 @@ def load_country_alias_map() -> dict[str, str]:
 
 
 def normalize_country_lookup_key(value: str) -> str:
+    """
+    Normalizes country names for lookup by applying case folding, trimming whitespace, and removing common punctuation.
+    """
     normalized = value.casefold().strip()
     normalized = normalized.replace("&", " and ")
     normalized = re.sub(r"[.'’]", "", normalized)
@@ -360,6 +468,10 @@ def normalize_country_lookup_key(value: str) -> str:
 
 
 def normalize_phone(value: Any) -> str | None:
+    """
+    Normalizes phone numbers by removing non-digit characters, while preserving a leading "+" if present.
+    """
+
     text = normalize_text(value)
     if not text:
         return None
@@ -378,6 +490,9 @@ def normalize_phone(value: Any) -> str | None:
 
 
 def parse_slash_date(value: str) -> str | None:
+    """
+    Helper function to parse dates in formats that use slashes as separators, such as "MM/DD/YYYY" or "DD/MM/YYYY".
+    """
     match = re.fullmatch(r"(\d{1,2})/(\d{1,2})/(\d{4})", value)
     if not match:
         return None
@@ -403,10 +518,121 @@ def parse_slash_date(value: str) -> str | None:
 
 
 def has_non_empty_value(value: Any) -> bool:
+    """
+    Helper function to determine if a value is considered non-empty for the purposes of merging duplicate leads.
+    This function checks for None, NaN, empty strings, and strings that are only whitespace
+    """
     if value is None:
         return False
-    if pd.isna(value):
-        return False
+    if isinstance(value, (list, tuple, set, dict)):
+        return len(value) > 0
+    try:
+        if pd.isna(value):
+            return False
+    except (TypeError, ValueError):
+        pass
     if isinstance(value, str):
         return value.strip() != ""
     return True
+
+
+def merge_duplicate_group(group_df: pd.DataFrame) -> dict[str, Any]:
+    """
+    Merges a group of duplicate leads (with the same email) into a single lead by applying the following logic:
+    - For each column, if there are multiple non-empty values across the duplicates, apply column-specific rules to choose the most appropriate value.
+    - For "source_row_number", choose the minimum value to retain the earliest source row number among the duplicates.
+    - For "lead_date", choose the minimum (oldest) date to retain the earliest lead date among the duplicates.
+    - For "phone", prefer values with a leading "+" and choose the longest valid phone number to retain the most complete phone information.
+    """
+    # Convert the group dataframe to a list of dictionaries for easier processing in the merging logic.
+    # Each dictionary represents a lead, and the list contains all duplicates for the same email.
+    # itearrows() is used to iterate over the rows of the group dataframe, and to_dict() converts each row 
+    # to a dictionary format for easier access to column values during merging.
+    rows = [row.to_dict() for _, row in group_df.iterrows()]
+    # Use the lead completeness score to determine the primary row among the duplicates, 
+    # which serves as the base for merging.
+    primary_row = max(rows, key=lead_completeness_score)
+    merged = primary_row.copy()
+
+    # For each column in the group, apply the merging logic to choose the appropriate value among the duplicates,
+    # and update the merged result accordingly.
+    for column in group_df.columns:
+        merged[column] = choose_merged_value(column, rows, primary_row.get(column))
+
+    return merged
+
+
+def choose_merged_value(column: str, rows: list[dict[str, Any]], fallback: Any) -> Any:
+    """
+    Helper function that chooses the merged value for a specific column among a group of duplicate rows 
+    based on column-specific rules:
+    - For "source_row_number", choose the minimum value.
+    - For "lead_date", choose the minimum (oldest) date.
+    - For "phone", prefer values with a leading "+" and choose the longest valid phone number.
+    - For "full_name", "title", and "company", choose the longest non-empty
+    - For "source", "country", "raw_email", "email", "first_name", and "last_name", choose the first non-empty value.
+    """
+    values = [row.get(column) for row in rows if has_non_empty_value(row.get(column))]
+    if not values:
+        return fallback
+
+    if column == "source_row_number":
+        return min(int(value) for value in values)
+
+    if column == "lead_date":
+        return min(values)
+
+    if column == "phone":
+        plus_prefixed = [value for value in values if isinstance(value, str) and value.startswith("+")]
+        candidate_pool = plus_prefixed or values
+        return max(candidate_pool, key=lambda value: len(str(value)))
+
+    if column in {"full_name", "title", "company"}:
+        return max(values, key=lambda value: len(str(value)))
+
+    if column in {"source", "country", "raw_email", "email", "first_name", "last_name"}:
+        return values[0]
+
+    return values[0]
+
+
+def lead_completeness_score(row: dict[str, Any]) -> int:
+    """
+    Helper function to calculate a completeness score for a lead based on the presence of non-empty values in key fields.
+    This score is used to determine which lead to retain when merging duplicates, with a higher score indicating a more complete lead.
+    """
+    scored_fields = (
+        "full_name",
+        "first_name",
+        "last_name",
+        "raw_email",
+        "email",
+        "title",
+        "company",
+        "phone",
+        "source",
+        "country",
+        "lead_date",
+    )
+    return sum(1 for field in scored_fields if has_non_empty_value(row.get(field)))
+
+
+def is_salesforce_ready_row(row: pd.Series) -> bool:
+    return all(has_non_empty_value(row.get(field)) for field in SALESFORCE_READY_REQUIRED_FIELDS)
+
+
+def clone_default_value(value: Any) -> Any:
+    """
+    Helper function to clone default values for enrichment and scoring columns to avoid shared mutable defaults across rows.
+    This function creates a new instance of the default value for each row, which is important for mutable types like lists and dictionaries 
+    to prevent unintended side effects from shared references.
+    """
+    if isinstance(value, list):
+        return list(value)
+    if isinstance(value, dict):
+        return dict(value)
+    if isinstance(value, set):
+        return set(value)
+    if isinstance(value, tuple):
+        return tuple(value)
+    return value

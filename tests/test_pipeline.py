@@ -1,10 +1,17 @@
 import pandas as pd
 import pytest
 
-from pipeline import normalize_leads, prepare_input_dataframe, split_accepted_and_rejected
+from pipeline import (
+    deduplicate_leads,
+    finalize_clean_leads,
+    normalize_leads,
+    prepare_input_dataframe,
+    split_accepted_and_rejected,
+)
 
 
 def make_raw_dataframe() -> pd.DataFrame:
+    """Helper function to create a sample raw dataframe of 2 leads for testing."""
     return pd.DataFrame(
         [
             {
@@ -390,3 +397,278 @@ def test_split_accepted_and_rejected_handles_single_at_symbol_edge_case() -> Non
     assert len(rejected) == 1
     assert rejected.loc[rejected.index[0], "drop_reason"] == "missing_or_invalid_email"
     assert rejected.loc[rejected.index[0], "raw_email"] == "@"
+
+
+def test_deduplicate_leads_merges_complementary_duplicate_rows() -> None:
+    raw_df = pd.DataFrame(
+        [
+            {
+                "Name": "Jane Doe",
+                "Email": "jane@example.com",
+                "Title": "",
+                "Company": "Acme",
+                "Phone": "555-123-4567",
+                "Source": "Inbound Demo",
+                "Country": "USA",
+                "Created At": "2026-04-03",
+            },
+            {
+                "Name": "Jane A. Doe",
+                "Email": "jane@example.com",
+                "Title": "Creative Operations Manager",
+                "Company": "Acme Studio",
+                "Phone": "+1 (555) 123-4567",
+                "Source": "Inbound Demo",
+                "Country": "United States of America",
+                "Created At": "2026-04-01",
+            },
+        ]
+    )
+
+    normalized = normalize_leads(prepare_input_dataframe(raw_df))
+    accepted, _ = split_accepted_and_rejected(normalized)
+    deduplicated, duplicate_rejected = deduplicate_leads(accepted)
+
+    assert len(deduplicated) == 1
+    assert len(duplicate_rejected) == 1
+
+    merged = deduplicated.iloc[0]
+    assert merged["email"] == "jane@example.com"
+    assert merged["full_name"] == "Jane A. Doe"
+    assert merged["title"] == "Creative Operations Manager"
+    assert merged["company"] == "Acme Studio"
+    assert merged["phone"] == "+15551234567"
+    assert merged["country"] == "United States"
+    assert merged["lead_date"] == "2026-04-01"
+    assert merged["source_row_number"] == 1
+
+    rejected_row = duplicate_rejected.iloc[0]
+    assert rejected_row["drop_reason"] == "duplicate_email_merged"
+    assert rejected_row["email"] == "jane@example.com"
+
+
+def test_deduplicate_leads_keeps_first_seen_source_and_raw_email() -> None:
+    raw_df = pd.DataFrame(
+        [
+            {
+                "Name": "John Smith",
+                "Email": "  JOHN@EXAMPLE.COM ",
+                "Title": "Brand Director",
+                "Company": "Northwind",
+                "Phone": "5551234567",
+                "Source": "Webinar",
+                "Country": "Canada",
+                "Created At": "2026-04-02",
+            },
+            {
+                "Name": "John Smith",
+                "Email": "john@example.com",
+                "Title": "Brand Director",
+                "Company": "Northwind Agency",
+                "Phone": "5551234567",
+                "Source": "Referral",
+                "Country": "CA",
+                "Created At": "2026-04-03",
+            },
+        ]
+    )
+
+    normalized = normalize_leads(prepare_input_dataframe(raw_df))
+    accepted, _ = split_accepted_and_rejected(normalized)
+    deduplicated, duplicate_rejected = deduplicate_leads(accepted)
+
+    assert len(deduplicated) == 1
+    assert len(duplicate_rejected) == 1
+
+    merged = deduplicated.iloc[0]
+    assert merged["source"] == "Webinar"
+    assert merged["raw_email"] == "JOHN@EXAMPLE.COM"
+    assert merged["company"] == "Northwind Agency"
+    assert merged["country"] == "Canada"
+
+
+def test_deduplicate_leads_returns_empty_duplicate_rejections_when_no_duplicates() -> None:
+    normalized = normalize_leads(prepare_input_dataframe(make_raw_dataframe()))
+    accepted, _ = split_accepted_and_rejected(normalized)
+
+    deduplicated, duplicate_rejected = deduplicate_leads(accepted)
+
+    assert len(deduplicated) == 2
+    assert duplicate_rejected.empty
+
+
+def test_deduplicate_leads_prefers_more_complete_primary_row_before_merging() -> None:
+    raw_df = pd.DataFrame(
+        [
+            {
+                "Name": "Alex",
+                "Email": "alex@example.com",
+                "Title": "",
+                "Company": "",
+                "Phone": "",
+                "Source": "Inbound Demo",
+                "Country": "USA",
+                "Created At": "2026-04-04",
+            },
+            {
+                "Name": "Alex Johnson",
+                "Email": "alex@example.com",
+                "Title": "Studio Manager",
+                "Company": "Creative House",
+                "Phone": "555-000-1234",
+                "Source": "Inbound Demo",
+                "Country": "United States",
+                "Created At": "2026-04-05",
+            },
+        ]
+    )
+
+    normalized = normalize_leads(prepare_input_dataframe(raw_df))
+    accepted, _ = split_accepted_and_rejected(normalized)
+    deduplicated, duplicate_rejected = deduplicate_leads(accepted)
+
+    assert len(deduplicated) == 1
+    assert len(duplicate_rejected) == 1
+
+    merged = deduplicated.iloc[0]
+    assert merged["full_name"] == "Alex Johnson"
+    assert merged["first_name"] == "Alex"
+    assert merged["last_name"] == "Johnson"
+    assert merged["title"] == "Studio Manager"
+    assert merged["company"] == "Creative House"
+
+
+def test_finalize_clean_leads_adds_placeholder_fields_and_output_order() -> None:
+    raw_df = pd.DataFrame(
+        [
+            {
+                "Name": "Jane Doe",
+                "Email": "jane@example.com",
+                "Title": "Creative Operations Manager",
+                "Company": "Acme Studio",
+                "Phone": "(555) 123-4567",
+                "Source": "Inbound Demo",
+                "Country": "USA",
+                "Created At": "2026-04-01",
+            }
+        ]
+    )
+
+    normalized = normalize_leads(prepare_input_dataframe(raw_df))
+    accepted, _ = split_accepted_and_rejected(normalized)
+    deduplicated, _ = deduplicate_leads(accepted)
+    finalized = finalize_clean_leads(deduplicated)
+
+    assert list(finalized.columns) == [
+        "source_row_number",
+        "first_name",
+        "last_name",
+        "full_name",
+        "email",
+        "title",
+        "company",
+        "phone",
+        "source",
+        "country",
+        "lead_date",
+        "industry",
+        "company_size",
+        "company_domain",
+        "enrichment_status",
+        "lead_score",
+        "score_reasons",
+        "salesforce_ready",
+    ]
+
+    assert finalized.loc[0, "industry"] is None
+    assert finalized.loc[0, "company_size"] is None
+    assert finalized.loc[0, "company_domain"] is None
+    assert finalized.loc[0, "enrichment_status"] == "not_enriched"
+    assert finalized.loc[0, "lead_score"] == 0
+    assert finalized.loc[0, "score_reasons"] == []
+
+
+def test_finalize_clean_leads_sets_salesforce_ready_when_required_fields_exist() -> None:
+    raw_df = pd.DataFrame(
+        [
+            {
+                "Name": "Jane Doe",
+                "Email": "jane@example.com",
+                "Title": "Creative Operations Manager",
+                "Company": "Acme Studio",
+                "Phone": "(555) 123-4567",
+                "Source": "Inbound Demo",
+                "Country": "USA",
+                "Created At": "2026-04-01",
+            }
+        ]
+    )
+
+    normalized = normalize_leads(prepare_input_dataframe(raw_df))
+    accepted, _ = split_accepted_and_rejected(normalized)
+    deduplicated, _ = deduplicate_leads(accepted)
+    finalized = finalize_clean_leads(deduplicated)
+
+    assert finalized.loc[0, "salesforce_ready"] is True
+
+
+def test_finalize_clean_leads_sets_salesforce_ready_false_when_last_name_missing() -> None:
+    raw_df = pd.DataFrame(
+        [
+            {
+                "Name": "Prince",
+                "Email": "prince@example.com",
+                "Title": "Artist",
+                "Company": "Northwind",
+                "Phone": "5551234567",
+                "Source": "Referral",
+                "Country": "Canada",
+                "Created At": "2026-04-02",
+            }
+        ]
+    )
+
+    normalized = normalize_leads(prepare_input_dataframe(raw_df))
+    accepted, _ = split_accepted_and_rejected(normalized)
+    deduplicated, _ = deduplicate_leads(accepted)
+    finalized = finalize_clean_leads(deduplicated)
+
+    assert finalized.loc[0, "salesforce_ready"] is False
+
+
+def test_finalize_clean_leads_preserves_existing_enrichment_or_scoring_values() -> None:
+    raw_df = pd.DataFrame(
+        [
+            {
+                "Name": "Jane Doe",
+                "Email": "jane@example.com",
+                "Title": "Creative Operations Manager",
+                "Company": "Acme Studio",
+                "Phone": "(555) 123-4567",
+                "Source": "Inbound Demo",
+                "Country": "USA",
+                "Created At": "2026-04-01",
+            }
+        ]
+    )
+
+    normalized = normalize_leads(prepare_input_dataframe(raw_df))
+    accepted, _ = split_accepted_and_rejected(normalized)
+    deduplicated, _ = deduplicate_leads(accepted)
+
+    enriched_like = deduplicated.copy()
+    enriched_like["industry"] = ["media"]
+    enriched_like["company_size"] = ["mid_market"]
+    enriched_like["company_domain"] = ["acme.com"]
+    enriched_like["enrichment_status"] = ["enriched"]
+    enriched_like["lead_score"] = [42]
+    enriched_like["score_reasons"] = [["title_match", "industry_match"]]
+
+    finalized = finalize_clean_leads(enriched_like)
+
+    assert finalized.loc[0, "industry"] == "media"
+    assert finalized.loc[0, "company_size"] == "mid_market"
+    assert finalized.loc[0, "company_domain"] == "acme.com"
+    assert finalized.loc[0, "enrichment_status"] == "enriched"
+    assert finalized.loc[0, "lead_score"] == 42
+    assert finalized.loc[0, "score_reasons"] == ["title_match", "industry_match"]
