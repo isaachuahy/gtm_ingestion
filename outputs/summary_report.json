@@ -4,10 +4,11 @@
   "rejected_rows": 11,
   "salesforce_ready_rows": 73,
   "clean_but_not_salesforce_ready_rows": 16,
-  "average_lead_score": 13.696629213483146,
-  "percent_enriched_from_raw": 89.0,
+  "average_lead_score": 13.359550561797754,
+  "percent_enriched_from_raw": 74.0,
   "enrichment_status_counts": {
-    "enriched": 89
+    "enriched": 74,
+    "not_found": 15
   },
   "rejection_reason_counts": {
     "duplicate_email_merged": 6,
