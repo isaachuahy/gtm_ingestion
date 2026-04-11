@@ -3,7 +3,6 @@ import pytest
 
 from pipeline import (
     deduplicate_leads,
-    finalize_clean_leads,
     normalize_leads,
     prepare_input_dataframe,
     split_accepted_and_rejected,

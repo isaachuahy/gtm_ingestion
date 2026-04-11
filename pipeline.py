@@ -258,71 +258,146 @@ def deduplicate_leads(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     return deduplicated, duplicate_rejected
 
-
-def enrich_leads(df: pd.DataFrame, enrichment_client: Any | None = None) -> pd.DataFrame:
-    raise NotImplementedError("Step 1 scaffold only.")
-
-
 def score_leads(df: pd.DataFrame, scoring_rules: dict[str, Any]) -> pd.DataFrame:
-    raise NotImplementedError("Step 1 scaffold only.")
+    scored = cast(pd.DataFrame, df.copy())
+
+    if scored.empty:
+        scored["lead_score"] = pd.Series(dtype="int64")
+        scored["score_reasons"] = pd.Series(dtype=object)
+        return scored
+
+    base_score = int(scoring_rules.get("base_score", 0))
+    score_bounds = scoring_rules.get("score_bounds", {})
+    min_score = int(score_bounds.get("min", 0))
+    max_score = int(score_bounds.get("max", 100))
+
+    title_function_rules = scoring_rules.get("title_function_scores", [])
+    seniority_rules = scoring_rules.get("seniority_scores", [])
+    company_size_scores = scoring_rules.get("company_size_scores", {})
+    industry_scores = scoring_rules.get("industry_scores", {})
+    penalties = scoring_rules.get("penalties", {})
+
+    lead_scores: list[int] = []
+    score_reasons: list[list[str]] = []
+
+    for _, row in scored.iterrows():
+        title_text = (normalize_text(row.get("title")) or "").casefold()
+        company = normalize_text(row.get("company"))
+        industry = (normalize_text(row.get("industry")) or "").casefold()
+        company_size = (normalize_text(row.get("company_size")) or "").casefold()
+        email = normalize_text(row.get("email"))
+        enrichment_status = (normalize_text(row.get("enrichment_status")) or "").casefold()
+
+        score = base_score
+        reasons: list[str] = []
+
+        # Use the first matching rule in each category to avoid double-counting overlapping keywords.
+        title_function_match = find_first_matching_score_rule(title_text, title_function_rules)
+        if title_function_match:
+            score += int(title_function_match["score"])
+            reasons.append(str(title_function_match["name"]))
+
+        seniority_match = find_first_matching_score_rule(title_text, seniority_rules)
+        if seniority_match:
+            score += int(seniority_match["score"])
+            reasons.append(str(seniority_match["name"]))
+
+        if industry in industry_scores:
+            industry_score = int(industry_scores[industry])
+            score += industry_score
+            if industry_score:
+                reasons.append(f"industry_{industry}")
+
+        if company_size in company_size_scores:
+            company_size_score = int(company_size_scores[company_size])
+            score += company_size_score
+            if company_size_score:
+                reasons.append(f"company_size_{company_size}")
+
+        email_domain = extract_email_domain(email)
+        if email_domain in FREE_EMAIL_DOMAINS:
+            free_email_penalty = int(penalties.get("free_email_domain", 0))
+            score -= free_email_penalty
+            if free_email_penalty:
+                reasons.append("penalty_free_email_domain")
+
+        if not has_non_empty_value(company):
+            missing_company_penalty = int(penalties.get("missing_company", 0))
+            score -= missing_company_penalty
+            if missing_company_penalty:
+                reasons.append("penalty_missing_company")
+
+        if enrichment_status == "failed":
+            failed_enrichment_penalty = int(penalties.get("failed_enrichment", 0))
+            score -= failed_enrichment_penalty
+            if failed_enrichment_penalty:
+                reasons.append("penalty_failed_enrichment")
+
+        bounded_score = max(min_score, min(score, max_score))
+        lead_scores.append(int(bounded_score))
+        score_reasons.append(reasons)
+
+    scored["lead_score"] = lead_scores
+    scored["score_reasons"] = score_reasons
+    return scored
+
+# TODO: should have been created only after enrichment
+# def finalize_clean_leads(df: pd.DataFrame) -> pd.DataFrame:
+#     """
+#     Finalizes the clean leads dataframe by ensuring all expected columns are present, filling in default values for enrichment and scoring columns,
+#     and calculating the salesforce_ready status for each lead based on the presence of required fields. (email, last_name, company)
+#     """
+#     finalized = cast(pd.DataFrame, df.copy())
+
+#     default_values: dict[str, Any] = {
+#         "industry": None,
+#         "company_size": None,
+#         "company_domain": None,
+#         "enrichment_status": "not_enriched",
+#         "lead_score": 0,
+#         "score_reasons": [],
+#     }
+
+#     # Ensure all expected enrichment and scoring columns are present, and fill in default values where necessary.
+#     for column, default_value in default_values.items():
+#         if column not in finalized.columns:
+#             # If the column is missing, add it with default values for all rows. This ensures that downstream processing and reporting can rely on the presence of these columns without needing to handle missing columns separately.
+#             finalized[column] = [clone_default_value(default_value) for _ in range(len(finalized))]
+#         else:
+#             # Fill in default values for existing columns where values are missing or empty, to ensure consistent data for downstream processing and reporting.
+#             finalized[column] = finalized[column].apply(
+#                 lambda value, fallback=default_value: (
+#                     clone_default_value(fallback) if not has_non_empty_value(value) else value
+#                 )
+#             )
+
+#     # Calculate the salesforce_ready status for each lead based on the presence of required fields. 
+#     # This adds a boolean column that indicates whether each lead meets the criteria for being considered ready for Salesforce, 
+#     # which can be used in downstream filtering and reporting.
+
+#     # Force to Python bool instead of np.bool to avoid potential issues with JSON serialization 
+#     salesforce_ready_values = []
+
+#     for _, row in finalized.iterrows():
+#         ready = is_salesforce_ready_row(row)
+#         salesforce_ready_values.append(bool(ready))
 
 
-def finalize_clean_leads(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Finalizes the clean leads dataframe by ensuring all expected columns are present, filling in default values for enrichment and scoring columns,
-    and calculating the salesforce_ready status for each lead based on the presence of required fields. (email, last_name, company)
-    """
-    finalized = cast(pd.DataFrame, df.copy())
+#     finalized["salesforce_ready"] = pd.Series(
+#         salesforce_ready_values,
+#         index=finalized.index,
+#         dtype=object,
+#     )
 
-    default_values: dict[str, Any] = {
-        "industry": None,
-        "company_size": None,
-        "company_domain": None,
-        "enrichment_status": "not_enriched",
-        "lead_score": 0,
-        "score_reasons": [],
-    }
+#     ordered_columns = list(CLEAN_LEAD_COLUMNS)
+#     # Ensure all expected columns are present in the finalized dataframe, adding any missing columns with null values. 
+#     # This guarantees a consistent schema for downstream processing and reporting.
+#     for column in ordered_columns:
+#         if column not in finalized.columns:
+#             finalized[column] = None
 
-    # Ensure all expected enrichment and scoring columns are present, and fill in default values where necessary.
-    for column, default_value in default_values.items():
-        if column not in finalized.columns:
-            # If the column is missing, add it with default values for all rows. This ensures that downstream processing and reporting can rely on the presence of these columns without needing to handle missing columns separately.
-            finalized[column] = [clone_default_value(default_value) for _ in range(len(finalized))]
-        else:
-            # Fill in default values for existing columns where values are missing or empty, to ensure consistent data for downstream processing and reporting.
-            finalized[column] = finalized[column].apply(
-                lambda value, fallback=default_value: (
-                    clone_default_value(fallback) if not has_non_empty_value(value) else value
-                )
-            )
-
-    # Calculate the salesforce_ready status for each lead based on the presence of required fields. 
-    # This adds a boolean column that indicates whether each lead meets the criteria for being considered ready for Salesforce, 
-    # which can be used in downstream filtering and reporting.
-
-    # Force to Python bool instead of np.bool to avoid potential issues with JSON serialization 
-    salesforce_ready_values = []
-
-    for _, row in finalized.iterrows():
-        ready = is_salesforce_ready_row(row)
-        salesforce_ready_values.append(bool(ready))
-
-
-    finalized["salesforce_ready"] = pd.Series(
-        salesforce_ready_values,
-        index=finalized.index,
-        dtype=object,
-    )
-
-    ordered_columns = list(CLEAN_LEAD_COLUMNS)
-    # Ensure all expected columns are present in the finalized dataframe, adding any missing columns with null values. 
-    # This guarantees a consistent schema for downstream processing and reporting.
-    for column in ordered_columns:
-        if column not in finalized.columns:
-            finalized[column] = None
-
-    # Reorder columns to have source_row_number first, followed by normalized lead columns, enrichment columns, scoring columns, and pipeline metadata columns for consistency in downstream processing and reporting.
-    return cast(pd.DataFrame, finalized[ordered_columns].copy())
+#     # Reorder columns to have source_row_number first, followed by normalized lead columns, enrichment columns, scoring columns, and pipeline metadata columns for consistency in downstream processing and reporting.
+#     return cast(pd.DataFrame, finalized[ordered_columns].copy())
 
 
 def build_summary_report(
@@ -534,6 +609,34 @@ def has_non_empty_value(value: Any) -> bool:
     if isinstance(value, str):
         return value.strip() != ""
     return True
+
+
+def find_first_matching_score_rule(
+    text: str,
+    rules: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    # Normalizes the input text and keywords for case-insensitive matching, and searches for the first rule 
+    # where any of its keywords match the text as a whole word.
+    normalized_text = re.sub(r"\s+", " ", text.casefold()).strip()
+
+    # Iterate through the provided scoring rules and their associated keywords to find the first rule that matches the input text.
+    for rule in rules:
+        for keyword in rule.get("keywords", []):
+            normalized_keyword = re.sub(r"\s+", " ", str(keyword).casefold()).strip()
+            if not normalized_keyword:
+                continue
+
+            pattern = rf"\b{re.escape(normalized_keyword)}\b"
+            if re.search(pattern, normalized_text):
+                return rule
+
+    return None
+
+
+def extract_email_domain(email: str | None) -> str | None:
+    if not email or "@" not in email:
+        return None
+    return email.rsplit("@", 1)[1].casefold()
 
 
 def merge_duplicate_group(group_df: pd.DataFrame) -> dict[str, Any]:
