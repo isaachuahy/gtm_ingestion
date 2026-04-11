@@ -15,7 +15,7 @@ class EnrichmentError(Exception):
 class TransientEnrichmentError(EnrichmentError):
     """Failure that may succeed on a later retry."""
 
-
+# enrichment_status can be "enriched", "not_found", or "failed"
 
 @dataclass(slots=True)
 class EnrichmentRequest:

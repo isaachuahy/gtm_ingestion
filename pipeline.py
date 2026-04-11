@@ -341,63 +341,43 @@ def score_leads(df: pd.DataFrame, scoring_rules: dict[str, Any]) -> pd.DataFrame
     scored["score_reasons"] = score_reasons
     return scored
 
-# TODO: should have been created only after enrichment
-# def finalize_clean_leads(df: pd.DataFrame) -> pd.DataFrame:
-#     """
-#     Finalizes the clean leads dataframe by ensuring all expected columns are present, filling in default values for enrichment and scoring columns,
-#     and calculating the salesforce_ready status for each lead based on the presence of required fields. (email, last_name, company)
-#     """
-#     finalized = cast(pd.DataFrame, df.copy())
+def finalize_clean_leads(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Finalize clean leads by filling expected output fields, computing
+    Salesforce readiness, and returning a stable output schema.
+    """
+    finalized = cast(pd.DataFrame, df.copy())
 
-#     default_values: dict[str, Any] = {
-#         "industry": None,
-#         "company_size": None,
-#         "company_domain": None,
-#         "enrichment_status": "not_enriched",
-#         "lead_score": 0,
-#         "score_reasons": [],
-#     }
+    default_values: dict[str, Any] = {
+        "industry": None,
+        "company_size": None,
+        "company_domain": None,
+        "enrichment_status": "not_enriched",
+        "lead_score": 0,
+        "score_reasons": [],
+    }
 
-#     # Ensure all expected enrichment and scoring columns are present, and fill in default values where necessary.
-#     for column, default_value in default_values.items():
-#         if column not in finalized.columns:
-#             # If the column is missing, add it with default values for all rows. This ensures that downstream processing and reporting can rely on the presence of these columns without needing to handle missing columns separately.
-#             finalized[column] = [clone_default_value(default_value) for _ in range(len(finalized))]
-#         else:
-#             # Fill in default values for existing columns where values are missing or empty, to ensure consistent data for downstream processing and reporting.
-#             finalized[column] = finalized[column].apply(
-#                 lambda value, fallback=default_value: (
-#                     clone_default_value(fallback) if not has_non_empty_value(value) else value
-#                 )
-#             )
+    for column, default_value in default_values.items():
+        if column not in finalized.columns:
+            finalized[column] = [clone_default_value(default_value) for _ in range(len(finalized))]
+            continue
 
-#     # Calculate the salesforce_ready status for each lead based on the presence of required fields. 
-#     # This adds a boolean column that indicates whether each lead meets the criteria for being considered ready for Salesforce, 
-#     # which can be used in downstream filtering and reporting.
+        finalized[column] = finalized[column].apply(
+            lambda value, fallback=default_value: (
+                clone_default_value(fallback) if not has_non_empty_value(value) else value
+            )
+        )
 
-#     # Force to Python bool instead of np.bool to avoid potential issues with JSON serialization 
-#     salesforce_ready_values = []
+    finalized["salesforce_ready"] = finalized.apply(
+        lambda row: bool(is_salesforce_ready_row(row)),
+        axis=1,
+    )
 
-#     for _, row in finalized.iterrows():
-#         ready = is_salesforce_ready_row(row)
-#         salesforce_ready_values.append(bool(ready))
+    for column in CLEAN_LEAD_COLUMNS:
+        if column not in finalized.columns:
+            finalized[column] = None
 
-
-#     finalized["salesforce_ready"] = pd.Series(
-#         salesforce_ready_values,
-#         index=finalized.index,
-#         dtype=object,
-#     )
-
-#     ordered_columns = list(CLEAN_LEAD_COLUMNS)
-#     # Ensure all expected columns are present in the finalized dataframe, adding any missing columns with null values. 
-#     # This guarantees a consistent schema for downstream processing and reporting.
-#     for column in ordered_columns:
-#         if column not in finalized.columns:
-#             finalized[column] = None
-
-#     # Reorder columns to have source_row_number first, followed by normalized lead columns, enrichment columns, scoring columns, and pipeline metadata columns for consistency in downstream processing and reporting.
-#     return cast(pd.DataFrame, finalized[ordered_columns].copy())
+    return cast(pd.DataFrame, finalized[list(CLEAN_LEAD_COLUMNS)].copy())
 
 
 def build_summary_report(
