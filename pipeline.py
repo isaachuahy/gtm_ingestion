@@ -1,10 +1,6 @@
 from __future__ import annotations
 
 """Air GTM ingestion pipeline.
-
-Step 1 of the rebuild defines the data contract and stage boundaries.
-Implementation details for normalization, validation, deduplication,
-enrichment, scoring, and reporting will be added iteratively.
 """
 
 import json
