@@ -385,7 +385,54 @@ def build_summary_report(
     clean_leads: pd.DataFrame,
     rejected_leads: pd.DataFrame,
 ) -> dict[str, Any]:
-    raise NotImplementedError("Step 1 scaffold only.")
+    """
+    Builds a summary report containing counts of raw, clean, rejected, and Salesforce-ready leads, 
+    as well as breakdowns of enrichment statuses and rejection reasons.
+    """
+    raw_rows = int(len(raw_df))
+    salesforce_ready_rows = 0
+    clean_but_not_salesforce_ready_rows = len(clean_leads)
+    average_lead_score = 0.0
+
+    if "salesforce_ready" in clean_leads.columns:
+        salesforce_ready_mask = clean_leads["salesforce_ready"] == True
+        salesforce_ready_rows = int(salesforce_ready_mask.sum())
+        clean_but_not_salesforce_ready_rows = int((~salesforce_ready_mask).sum())
+
+    if "lead_score" in clean_leads.columns and not clean_leads.empty:
+        average_lead_score = float(clean_leads["lead_score"].fillna(0).mean())
+
+    enrichment_status_counts: dict[str, int] = {}
+    enriched_rows = 0
+    if "enrichment_status" in clean_leads.columns:
+        enrichment_status_counts = {
+            str(key): int(value)
+            for key, value in clean_leads["enrichment_status"].value_counts(dropna=False).items()
+        }
+        enriched_rows = int((clean_leads["enrichment_status"] == "enriched").sum())
+
+    percent_enriched_from_raw = 0.0
+    if raw_rows > 0:
+        percent_enriched_from_raw = (enriched_rows / raw_rows) * 100
+
+    rejection_reason_counts: dict[str, int] = {}
+    if "drop_reason" in rejected_leads.columns:
+        rejection_reason_counts = {
+            str(key): int(value)
+            for key, value in rejected_leads["drop_reason"].value_counts(dropna=False).items()
+        }
+
+    return {
+        "raw_rows": raw_rows,
+        "clean_rows": int(len(clean_leads)),
+        "rejected_rows": int(len(rejected_leads)),
+        "salesforce_ready_rows": salesforce_ready_rows,
+        "clean_but_not_salesforce_ready_rows": clean_but_not_salesforce_ready_rows,
+        "average_lead_score": average_lead_score,
+        "percent_enriched_from_raw": percent_enriched_from_raw,
+        "enrichment_status_counts": enrichment_status_counts,
+        "rejection_reason_counts": rejection_reason_counts,
+    }
 
 
 def normalize_text(value: Any) -> str | None:
