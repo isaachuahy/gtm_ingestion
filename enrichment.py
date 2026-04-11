@@ -64,7 +64,7 @@ class MockEnrichmentClient:
         email = normalize_text(request.email)
         title = normalize_text(request.title)
 
-        if not email:
+        if not company:
             return EnrichmentResponse(
                 industry=None,
                 company_size=None,
@@ -72,7 +72,7 @@ class MockEnrichmentClient:
                 enrichment_status="not_found",
                 provider_name=self.provider_name,
                 provider_record_found=False,
-                error_message="missing_email",
+                error_message="missing_company",
                 raw_payload={},
             )
         
@@ -147,6 +147,9 @@ def enrich_with_retry(
             return client.enrich(request)
         except TransientEnrichmentError as error:
             last_error = error
+
+    # We can differentiate between a definitive "not found" (where the provider returns a valid response indicating no match) 
+    # and a failure to enrich due to transient errors (where we exhausted all retries without success).
 
     # By default, return a failed enrichment response if all attempts fail, without raising an exception to the caller -
     # I did this because I don't want it to catastrophically fail the entire pipeline if enrichment fails

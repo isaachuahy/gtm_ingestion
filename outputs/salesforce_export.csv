@@ -1,0 +1,74 @@
+FirstName,LastName,Email,Company,Title,Phone,LeadSource,Country,Industry__c,Company_Size__c,Company_Domain__c,Lead_Score__c,Score_Reasons__c,Lead_Date__c,Source_Row_Number__c
+Alice,Anderson,alice.anderson@company.com,GlobalTech,Product Lead,1234567890,Referral,United States,unknown,enterprise,globaltech.com,23,manager_lead; company_size_enterprise,2025-03-19,1
+Alice,Jones,alice.jones@business.co,Air Inc,CEO,+18005551212,Website Visitor,United States,unknown,small_business,airinc.com,25,executive; company_size_small_business,2025-04-01,2
+Jack,Brown,jack.brown@business.co,example corp,,5551212,LinkedIn,United States,unknown,small_business,examplecorp.com,5,company_size_small_business,2024-10-30,4
+Carol,Martinez,carol.martinez@business.co,COMPANY,Marketing Manager,1234567890,LinkedIn,Canada,unknown,small_business,company.com,13,manager_lead; company_size_small_business,2025-01-11,5
+Alice,Lee,alice.lee@startup.io,example corp,Sr. Eng,,Website Visitor,France,unknown,small_business,examplecorp.com,5,company_size_small_business,2025-05-12,6
+Ivy,Chen,ivy.chen@gmail.com,COMPANY,Marketing Manager,,LinkedIn,France,unknown,small_business,company.com,8,manager_lead; company_size_small_business; penalty_free_email_domain,2025-05-07,7
+Carol,Chen,carol.chen@gmail.com,Air Inc,CTO,,Website Visitor,United Kingdom,unknown,small_business,airinc.com,20,executive; company_size_small_business; penalty_free_email_domain,2025-03-09,8
+Bob,Jones,bob.jones@example.com,Air.Inc,product lead,1234567890,Referral,United States,unknown,small_business,airinc.com,13,manager_lead; company_size_small_business,,9
+Jack,Smith,jack.smith@air.inc,Acme Co,Sr. Eng,,Website Visitor,United States,unknown,small_business,acmeco.com,5,company_size_small_business,2025-06-15,11
+Alice,Chen,alice.chen@startup.io,GlobalTech,Software Engineer,1234567890,LinkedIn,United States,unknown,enterprise,globaltech.com,18,engineering; company_size_enterprise,2025-02-15,13
+Grace,Martinez,grace.martinez@gmail.com,example corp,head of sales,1234567890,Product Signup,Canada,unknown,small_business,examplecorp.com,19,sales; vp_head_director; company_size_small_business; penalty_free_email_domain,2024-11-11,15
+Emily,Brown,emily.brown@startup.io,Startup.io,Data Analyst,,Referral,Canada,unknown,small_business,startupio.com,8,engineering; company_size_small_business,2024-10-18,17
+Emily,Jones,emily.jones@business.co,Air Inc,Sr. Engineer,,Event,Germany,unknown,small_business,airinc.com,8,engineering; company_size_small_business,2025-03-27,18
+Henry,Chen,henry.chen@gmail.com,Acme Co,CTO,1234567890,Website Visitor,Germany,unknown,small_business,acmeco.com,20,executive; company_size_small_business; penalty_free_email_domain,2024-08-20,19
+Bob,Wilson,bob.wilson@business.co,Air.Inc,head of sales,+18005551212,LinkedIn,Germany,unknown,small_business,airinc.com,24,sales; vp_head_director; company_size_small_business,2025-05-15,22
+Bob,Lee,bob.lee@business.co,GlobalTech,Head of Sales,+18005551212,Product Signup,Canada,unknown,enterprise,globaltech.com,34,sales; vp_head_director; company_size_enterprise,2024-09-13,23
+Jack,Brown,jack.brown@company.com,GlobalTech,Data Analyst,1234567890,Event,France,unknown,enterprise,globaltech.com,18,engineering; company_size_enterprise,2024-12-20,24
+Emily,Chen,emily.chen@gmail.com,GlobalTech,product lead,1234567890,Referral,United States,unknown,enterprise,globaltech.com,18,manager_lead; company_size_enterprise; penalty_free_email_domain,2024-10-28,25
+David,Chen,david.chen@business.co,Acme Co,Sr. Engineer,,Event,United States,unknown,small_business,acmeco.com,8,engineering; company_size_small_business,2025-02-04,30
+Grace,Johnson,grace.johnson@gmail.com,GlobalTech,Head of Sales,1234567890,Referral,United States,unknown,enterprise,globaltech.com,29,sales; vp_head_director; company_size_enterprise; penalty_free_email_domain,2025-04-24,31
+Henry,Lee,henry.lee@yahoo.com,Umbrella Corp,Head of Sales,+18005551212,Website Visitor,United Kingdom,unknown,small_business,umbrellacorp.com,19,sales; vp_head_director; company_size_small_business; penalty_free_email_domain,2025-03-04,32
+David,Smith,david.smith@business.co,Air Inc,VP Marketing,,Website Visitor,Germany,unknown,small_business,airinc.com,20,vp_head_director; company_size_small_business,2024-08-20,33
+Bob,Martinez,bob.martinez@startup.io,Acme Co,Head of Sales,+18005551212,LinkedIn,United Kingdom,unknown,small_business,acmeco.com,24,sales; vp_head_director; company_size_small_business,2025-02-25,34
+Henry,Brown,henry.brown@company.com,Initech,CEO,,Referral,United States,unknown,small_business,initech.com,25,executive; company_size_small_business,2025-06-03,36
+Ivy,Anderson,ivy.anderson@startup.io,Initech,Data Analyst,5551212,Product Signup,Germany,unknown,small_business,initech.com,8,engineering; company_size_small_business,2024-10-19,38
+Emily,Chen,emily.chen@yahoo.com,Startup.io,VP Mktg,,Website Visitor,France,unknown,small_business,startupio.com,15,vp_head_director; company_size_small_business; penalty_free_email_domain,2025-05-18,39
+Emily,Smith,emily.smith@air.inc,Air.Inc,Data Analyst,1234567890,Referral,United States,unknown,small_business,airinc.com,8,engineering; company_size_small_business,2025-05-10,40
+Carol,Taylor,carol.taylor@business.co,GlobalTech,VP Marketing,1234567890,Website Visitor,Canada,unknown,enterprise,globaltech.com,30,vp_head_director; company_size_enterprise,2025-07-11,42
+Grace,Martinez,grace.martinez@company.com,Initech,Product Lead,1234567890,Website Visitor,,unknown,small_business,initech.com,13,manager_lead; company_size_small_business,2025-07-09,43
+Jack,Jones,jack.jones@business.co,Initech,VP Mktg,1234567890,Referral,India,unknown,small_business,initech.com,20,vp_head_director; company_size_small_business,2025-01-06,46
+Frank,Anderson,frank.anderson@company.com,Air.Inc,CTO,1234567890,Referral,United States,unknown,small_business,airinc.com,25,executive; company_size_small_business,2024-12-25,47
+Alice,Johnson,alice.johnson@yahoo.com,Acme Co,VP Marketing,5551212,Website Visitor,India,unknown,small_business,acmeco.com,15,vp_head_director; company_size_small_business; penalty_free_email_domain,2024-10-14,49
+Bob,Taylor,bob.taylor@yahoo.com,example corp,Sr. Engineer,,Referral,Canada,unknown,small_business,examplecorp.com,3,engineering; company_size_small_business; penalty_free_email_domain,2025-07-02,50
+Emily,Johnson,emily.johnson@yahoo.com,Acme Co,CTO,+18005551212,Product Signup,,unknown,small_business,acmeco.com,20,executive; company_size_small_business; penalty_free_email_domain,2024-09-28,52
+Frank,Wilson,frank.wilson@air.inc,COMPANY,Designer,+18005551212,Website Visitor,United States,unknown,small_business,company.com,5,company_size_small_business,2024-10-14,53
+Bob,Johnson,bob.johnson@business.co,Initech,,,Referral,India,unknown,small_business,initech.com,5,company_size_small_business,2025-03-31,54
+Henry,Chen,henry.chen@company.com,Startup.io,Head of Sales,,Referral,France,unknown,small_business,startupio.com,24,sales; vp_head_director; company_size_small_business,2024-12-08,55
+Jack,Wilson,jack.wilson@gmail.com,Air.Inc,Head of Sales,1234567890,Event,Germany,unknown,small_business,airinc.com,19,sales; vp_head_director; company_size_small_business; penalty_free_email_domain,2025-02-02,56
+Carol,Anderson,carol.anderson@company.com,Air.Inc,Product Lead,5551212,Website Visitor,Germany,unknown,small_business,airinc.com,13,manager_lead; company_size_small_business,2025-02-05,57
+Ivy,Jones,ivy.jones@air.inc,Example Corp,product lead,1234567890,Referral,Canada,unknown,small_business,examplecorp.com,13,manager_lead; company_size_small_business,2025-05-13,59
+Henry,Brown,henry.brown@air.inc,Initech,Head of Sales,5551212,Event,,unknown,small_business,initech.com,24,sales; vp_head_director; company_size_small_business,2025-03-25,60
+Bob,Brown,bob.brown@startup.io,Air Inc,CEO,1234567890,Website Visitor,Germany,unknown,small_business,airinc.com,25,executive; company_size_small_business,2025-04-17,61
+Carol,Chen,carol.chen@company.com,GlobalTech,Software Engineer,1234567890,LinkedIn,Canada,unknown,enterprise,globaltech.com,18,engineering; company_size_enterprise,2025-07-22,62
+Jack,Lee,jack.lee@company.com,Air.Inc,CEO,,Referral,Canada,unknown,small_business,airinc.com,25,executive; company_size_small_business,2025-06-29,63
+Jack,Wilson,jack.wilson@yahoo.com,Initech,Software Engineer,1234567890,LinkedIn,United States,unknown,small_business,initech.com,3,engineering; company_size_small_business; penalty_free_email_domain,2024-09-14,64
+David,Taylor,david.taylor@air.inc,Air.Inc,VP Marketing,1234567890,Product Signup,United States,unknown,small_business,airinc.com,20,vp_head_director; company_size_small_business,2024-11-04,65
+Jack,Chen,jack.chen@gmail.com,Example Corp,Sr. Engineer,,Referral,France,unknown,small_business,examplecorp.com,3,engineering; company_size_small_business; penalty_free_email_domain,2025-02-19,66
+Bob,Martinez,bob.martinez@company.com,GlobalTech,VP Mktg,1234567890,Referral,Canada,unknown,enterprise,globaltech.com,30,vp_head_director; company_size_enterprise,2025-06-29,67
+Alice,Chen,alice.chen@air.inc,Acme Co,Sr. Engineer,,Product Signup,United States,unknown,small_business,acmeco.com,8,engineering; company_size_small_business,2024-08-20,68
+Alice,Wilson,alice.wilson@gmail.com,COMPANY,CTO,5551212,Product Signup,Germany,unknown,small_business,company.com,20,executive; company_size_small_business; penalty_free_email_domain,2024-09-29,70
+Frank,Lee,frank.lee@yahoo.com,Example Corp,Sr. Engineer,5551212,Referral,France,unknown,small_business,examplecorp.com,3,engineering; company_size_small_business; penalty_free_email_domain,2025-06-28,71
+Grace,Taylor,grace.taylor@company.com,Air.Inc,VP Mktg,,LinkedIn,France,unknown,small_business,airinc.com,20,vp_head_director; company_size_small_business,2024-08-24,72
+Ivy,Anderson,ivy.anderson@yahoo.com,Initech,Sr. Engineer,1234567890,Referral,United States,unknown,small_business,initech.com,3,engineering; company_size_small_business; penalty_free_email_domain,2025-03-12,73
+Carol,Taylor,carol.taylor@company.com,Startup.io,CEO,1234567890,Product Signup,,unknown,small_business,startupio.com,25,executive; company_size_small_business,2025-04-06,74
+Jack,Jones,jack.jones@startup.io,Startup.io,CEO,+18005551212,Event,Germany,unknown,small_business,startupio.com,25,executive; company_size_small_business,2024-11-18,75
+Alice,Johnson,alice.johnson@company.com,Example Corp,,1234567890,Referral,United States,unknown,small_business,examplecorp.com,5,company_size_small_business,2025-06-29,76
+Frank,Brown,frank.brown@startup.io,Acme Co,Sr. Engineer,1234567890,Event,United States,unknown,small_business,acmeco.com,8,engineering; company_size_small_business,2025-04-04,77
+Jack,Martinez,jack.martinez@company.com,Initech,CTO,5551212,Event,France,unknown,small_business,initech.com,25,executive; company_size_small_business,2024-10-19,79
+Ivy,Jones,ivy.jones@company.com,Startup.io,product lead,+18005551212,Product Signup,United Kingdom,unknown,small_business,startupio.com,13,manager_lead; company_size_small_business,2024-10-20,81
+Alice,Lee,alice.lee@air.inc,GlobalTech,VP Mktg,,Product Signup,United States,unknown,enterprise,globaltech.com,30,vp_head_director; company_size_enterprise,2025-08-02,83
+Grace,Smith,grace.smith@air.inc,Startup.io,Marketing Manager,,Referral,,unknown,small_business,startupio.com,13,manager_lead; company_size_small_business,2025-05-02,84
+Grace,Smith,grace.smith@yahoo.com,example corp,head of sales,,Product Signup,United Kingdom,unknown,small_business,examplecorp.com,19,sales; vp_head_director; company_size_small_business; penalty_free_email_domain,2025-03-14,85
+Emily,Jones,emily.jones@air.inc,Startup.io,Designer,1234567890,Event,India,unknown,small_business,startupio.com,5,company_size_small_business,2025-07-01,86
+Alice,Smith,alice.smith@gmail.com,example corp,CEO,+18005551212,Website Visitor,Canada,unknown,small_business,examplecorp.com,20,executive; company_size_small_business; penalty_free_email_domain,2025-07-19,87
+Emily,Jones,emily.jones@yahoo.com,Startup.io,product lead,,Event,United Kingdom,unknown,small_business,startupio.com,8,manager_lead; company_size_small_business; penalty_free_email_domain,2025-01-30,88
+Carol,Wilson,carol.wilson@company.com,Initech,Data Analyst,1234567890,Website Visitor,India,unknown,small_business,initech.com,8,engineering; company_size_small_business,2025-07-08,93
+David,Lee,david.lee@gmail.com,Air Inc,CEO,,Product Signup,India,unknown,small_business,airinc.com,20,executive; company_size_small_business; penalty_free_email_domain,2025-06-11,94
+Ivy,Taylor,ivy.taylor@yahoo.com,Example Corp,Marketing Manager,,Event,,unknown,small_business,examplecorp.com,8,manager_lead; company_size_small_business; penalty_free_email_domain,2025-03-21,95
+Grace,Taylor,grace.taylor@yahoo.com,example corp,head of sales,1234567890,Website Visitor,India,unknown,small_business,examplecorp.com,19,sales; vp_head_director; company_size_small_business; penalty_free_email_domain,2025-04-28,96
+Henry,Anderson,henry.anderson@gmail.com,Umbrella Corp,Software Engineer,5551212,Product Signup,United Kingdom,unknown,small_business,umbrellacorp.com,3,engineering; company_size_small_business; penalty_free_email_domain,2024-10-01,97
+Grace,Smith,grace.smith@company.com,example corp,Data Analyst,1234567890,Referral,Canada,unknown,small_business,examplecorp.com,8,engineering; company_size_small_business,2024-12-07,98
+Carol,Martinez,carol.martinez@yahoo.com,Umbrella Corp,Product Lead,5551212,Product Signup,United Kingdom,unknown,small_business,umbrellacorp.com,8,manager_lead; company_size_small_business; penalty_free_email_domain,2024-10-15,99
+Henry,Smith,henry.smith@business.co,example corp,Sr. Engineer,,Product Signup,India,unknown,small_business,examplecorp.com,8,engineering; company_size_small_business,2025-06-20,100

@@ -1,0 +1,12 @@
+source_row_number,full_name,first_name,last_name,raw_email,email,title,company,phone,source,country,lead_date,drop_reason
+10,,,,missing-at-symbol.com,,VP Mktg,,+18005551212,linkedin,United States,,missing_or_invalid_email
+20,alice smith,Alice,Smith,emilychen@yahoo,,,Air.Inc,5551212,LinkedIn,,,missing_or_invalid_email
+44,,,,emilychen@yahoo,,Sr. Eng,Air.Inc,,Website Visitor,Canada,,missing_or_invalid_email
+45,,,,carol@,,head of sales,example corp,+18005551212,linkedin,United States,,missing_or_invalid_email
+78,,,,missing-at-symbol.com,,VP Mktg,Air.Inc,5551212,linkedin,United States,,missing_or_invalid_email
+51,carol,Carol,,bob.jones@Example.Com,bob.jones@example.com,Sr. Eng,,,Website Visitor,United States,,duplicate_email_merged
+35,Alice Chen,Alice,Chen,alice.chen@startup.io,alice.chen@startup.io,product lead,Acme Co,,Website Visitor,United States,2025-04-02,duplicate_email_merged
+82,Alice Chen,Alice,Chen,alice.chen@startup.io,alice.chen@startup.io,Software Engineer,,,Website Visitor,United States,2025-05-24,duplicate_email_merged
+28,Grace Martinez,Grace,Martinez,grace.martinez@gmail.com,grace.martinez@gmail.com,CTO,example corp,1234567890,Product Signup,United States,2025-07-03,duplicate_email_merged
+80,Jack Brown,Jack,Brown,jack.brown@company.com,jack.brown@company.com,Designer,GlobalTech,1234567890,Event,,2024-12-20,duplicate_email_merged
+90,Grace Johnson,Grace,Johnson,grace.johnson@gmail.com,grace.johnson@gmail.com,Head of Sales,GlobalTech,1234567890,LinkedIn,United States,2025-04-24,duplicate_email_merged

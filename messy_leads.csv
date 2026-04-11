@@ -1,0 +1,101 @@
+Name,Email,Title,Company,Phone,Source,Country,Created At
+Alice Anderson,alice.anderson@company.com,Product Lead,GlobalTech,(123) 456-7890,Referral,United States,19-Mar-2025
+Alice Jones,alice.jones@business.co,CEO,Air Inc,+1 800 555 1212,Website Visitor,US,2025-04-01
+carol,valid@example.com,VP Mktg,example corp,call me,LinkedIn,CA,
+Jack Brown,jack.brown@business.co,,example corp,5551212,LinkedIn,US,2024-10-30
+Carol Martinez,carol.martinez@business.co,Marketing Manager,COMPANY,123-456-7890,LinkedIn,CA,2025-01-11
+Alice Lee,alice.lee@startup.io,Sr. Eng,example corp,call me,Website Visitor,France,12-May-2025
+Ivy Chen,ivy.chen@gmail.com,Marketing Manager,COMPANY,call me,LinkedIn,France,05/07/2025
+Carol Chen,carol.chen@gmail.com,CTO,Air Inc,call me,Website Visitor,UK,2025-03-09
+BOB JONES,bob.jones@Example.Com,product lead  ,Air.Inc,(123) 456-7890,Referral,,12 days ago
+   ,missing-at-symbol.com,VP Mktg,,+1 800 555 1212,linkedin,usa,3 days ago
+Jack Smith,jack.smith@air.inc,Sr. Eng,Acme Co,call me,Website Visitor,United States,15-Jun-2025
+Frank Johnson,frank.johnson@yahoo.com,Data Analyst,   ,5551212,Website Visitor,Canada,2024-10-22
+Alice Chen,alice.chen@startup.io,Designer,GlobalTech,123-456-7890,LinkedIn,,02/15/2025
+Emily Lee,emily.lee@business.co,CEO,,123-456-7890,Event,,01/26/2025
+Grace Martinez,grace.martinez@gmail.com,head of sales,COMPANY,call me,Product Signup,Canada,11/11/2024
+Alice Jones,alice.jones@gmail.com,Sr. Engineer,,+1 800 555 1212,Website Visitor,UK,02-Mar-2025
+Emily Brown,emily.brown@startup.io,Data Analyst,Startup.io,call me,Referral,CA,10/18/2024
+Emily Jones,emily.jones@business.co,Sr. Engineer,Air Inc,N/A,Event,Germany,27-Mar-2025
+Henry Chen,henry.chen@gmail.com,CTO,Acme Co,(123) 456-7890,Website Visitor,Germany,20-Aug-2024
+  alice smith,emilychen@yahoo,,Air.Inc,5551212,LinkedIn,,8 days ago
+Bob Wilson,bob.wilson@company.com,Data Analyst,   ,+1 800 555 1212,LinkedIn,India,2025-06-14
+Bob Wilson,bob.wilson@business.co,head of sales,Air.Inc,+1 800 555 1212,LinkedIn,Germany,15-May-2025
+Bob Lee,bob.lee@business.co,Head of Sales,GlobalTech,+1 800 555 1212,Product Signup,Canada,2024-09-13
+Jack Brown,jack.brown@company.com,Data Analyst,Initech,5551212,Event,France,03/16/2025
+Emily Chen,emily.chen@gmail.com,product lead  ,GlobalTech,(123) 456-7890,Referral,US,28-Oct-2024
+Frank Anderson,frank.anderson@yahoo.com,Sr. Engineer,   ,N/A,LinkedIn,India,2025-08-14
+Jack Chen,jack.chen@company.com,VP Mktg,   ,+1 800 555 1212,Website Visitor,Canada,08-Feb-2025
+Grace Martinez,grace.martinez@gmail.com,CTO,example corp,123-456-7890,Product Signup,United States,07/03/2025
+Alice Johnson,alice.johnson@gmail.com,Software Engineer,,5551212,Referral,Canada,2025-06-25
+David Chen,david.chen@business.co,Sr. Engineer,Acme Co,N/A,Event,United States,04-Feb-2025
+Grace Johnson,grace.johnson@gmail.com,Product Lead,   ,123-456-7890,Referral,,2025-06-03
+Henry Lee,henry.lee@yahoo.com,Head of Sales,Umbrella Corp,+1 800 555 1212,Website Visitor,UK,2025-03-04
+David Smith,david.smith@business.co,VP Marketing,Air Inc,N/A,Website Visitor,Germany,20-Aug-2024
+Bob Martinez,bob.martinez@startup.io,Head of Sales,Acme Co,+1 800 555 1212,LinkedIn,UK,2025-02-25
+Alice Chen,alice.chen@startup.io,product lead  ,Acme Co,N/A,Website Visitor,United States,02-Apr-2025
+Henry Brown,henry.brown@company.com,CEO,Initech,call me,Referral,US,2025-06-03
+Jack Wilson,jack.wilson@air.inc,Designer,,+1 800 555 1212,Website Visitor,,2025-01-28
+Ivy Anderson,ivy.anderson@startup.io,Data Analyst,Initech,5551212,Product Signup,Germany,19-Oct-2024
+Emily Chen,emily.chen@yahoo.com,VP Mktg,Startup.io,call me,Website Visitor,France,2025-05-18
+Emily Smith,emily.smith@air.inc,Data Analyst,Air.Inc,123-456-7890,Referral,US,05/10/2025
+Ivy Martinez,ivy.martinez@gmail.com,Designer,,5551212,Website Visitor,Canada,2024-10-07
+Carol Taylor,carol.taylor@business.co,VP Marketing,GlobalTech,(123) 456-7890,Website Visitor,CA,2025-07-11
+Grace Martinez,grace.martinez@company.com,Product Lead,Initech,(123) 456-7890,Website Visitor,,09-Jul-2025
+   ,emilychen@yahoo,Sr. Eng,Air.Inc,N/A,Website Visitor,CA,9 days ago
+   ,carol@,head of sales,example corp,+1 800 555 1212,linkedin,usa,17 days ago
+Jack Jones,jack.jones@business.co,VP Mktg,Initech,(123) 456-7890,Referral,India,01/06/2025
+Frank Anderson,frank.anderson@company.com,CTO,Air.Inc,(123) 456-7890,Referral,US,12/25/2024
+Emily Johnson,emily.johnson@gmail.com,Marketing Manager,,N/A,Product Signup,CA,09/22/2024
+Alice Johnson,alice.johnson@yahoo.com,VP Marketing,Acme Co,5551212,Website Visitor,India,10/14/2024
+Bob Taylor,bob.taylor@yahoo.com,Sr. Engineer,example corp,N/A,Referral,CA,2025-07-02
+carol,bob.jones@Example.Com,Sr. Eng,   ,N/A,Website Visitor,usa,
+Emily Johnson,emily.johnson@yahoo.com,CTO,Acme Co,+1 800 555 1212,Product Signup,,2024-09-28
+Frank Wilson,frank.wilson@air.inc,Designer,COMPANY,+1 800 555 1212,Website Visitor,United States,14-Oct-2024
+Bob Johnson,bob.johnson@business.co,,Initech,call me,Referral,India,2025-03-31
+Henry Chen,henry.chen@company.com,Head of Sales,Startup.io,call me,Referral,France,08-Dec-2024
+Jack Wilson,jack.wilson@gmail.com,Head of Sales,Air.Inc,(123) 456-7890,Event,Germany,2025-02-02
+Carol Anderson,carol.anderson@company.com,Product Lead,Air.Inc,5551212,Website Visitor,Germany,02/05/2025
+Carol Brown,carol.brown@startup.io,Head of Sales,   ,N/A,Referral,US,2025-07-30
+Ivy Jones,ivy.jones@air.inc,product lead  ,Example Corp,(123) 456-7890,Referral,Canada,13-May-2025
+Henry Brown,henry.brown@air.inc,Head of Sales,Initech,5551212,Event,,2025-03-25
+Bob Brown,bob.brown@startup.io,CEO,Air Inc,(123) 456-7890,Website Visitor,Germany,17-Apr-2025
+Carol Chen,carol.chen@company.com,Software Engineer,GlobalTech,(123) 456-7890,LinkedIn,Canada,22-Jul-2025
+Jack Lee,jack.lee@company.com,CEO,Air.Inc,N/A,Referral,CA,06/29/2025
+Jack Wilson,jack.wilson@yahoo.com,Software Engineer,Initech,123-456-7890,LinkedIn,United States,09/14/2024
+David Taylor,david.taylor@air.inc,VP Marketing,Air.Inc,123-456-7890,Product Signup,United States,11/04/2024
+Jack Chen,jack.chen@gmail.com,Sr. Engineer,Example Corp,call me,Referral,France,02/19/2025
+Bob Martinez,bob.martinez@company.com,VP Mktg,GlobalTech,(123) 456-7890,Referral,CA,2025-06-29
+Alice Chen,alice.chen@air.inc,Sr. Engineer,Acme Co,N/A,Product Signup,United States,20-Aug-2024
+Emily Lee,emily.lee@startup.io,CTO,   ,N/A,LinkedIn,Germany,01/30/2025
+Alice Wilson,alice.wilson@gmail.com,CTO,COMPANY,5551212,Product Signup,Germany,2024-09-29
+Frank Lee,frank.lee@yahoo.com,Sr. Engineer,Example Corp,5551212,Referral,France,06/28/2025
+Grace Taylor,grace.taylor@company.com,VP Mktg,Air.Inc,call me,LinkedIn,France,2024-08-24
+Ivy Anderson,ivy.anderson@yahoo.com,Sr. Engineer,Initech,123-456-7890,Referral,US,2025-03-12
+Carol Taylor,carol.taylor@company.com,CEO,Startup.io,123-456-7890,Product Signup,,04/06/2025
+Jack Jones,jack.jones@startup.io,CEO,Startup.io,+1 800 555 1212,Event,Germany,11/18/2024
+Alice Johnson,alice.johnson@company.com,,Example Corp,(123) 456-7890,Referral,United States,29-Jun-2025
+Frank Brown,frank.brown@startup.io,Sr. Engineer,Acme Co,123-456-7890,Event,US,2025-04-04
+,missing-at-symbol.com,VP Mktg,Air.Inc,5551212,linkedin,usa,2 days ago
+Jack Martinez,jack.martinez@company.com,CTO,Initech,5551212,Event,France,19-Oct-2024
+Jack Brown,jack.brown@company.com,Designer,GlobalTech,123-456-7890,Event,,20-Dec-2024
+Ivy Jones,ivy.jones@company.com,product lead  ,Startup.io,+1 800 555 1212,Product Signup,UK,20-Oct-2024
+Alice Chen,alice.chen@startup.io,Software Engineer,,call me,Website Visitor,US,2025-05-24
+Alice Lee,alice.lee@air.inc,VP Mktg,GlobalTech,call me,Product Signup,US,2025-08-02
+Grace Smith,grace.smith@air.inc,Marketing Manager,Startup.io,call me,Referral,,02-May-2025
+Grace Smith,grace.smith@yahoo.com,head of sales,example corp,call me,Product Signup,UK,03/14/2025
+Emily Jones,emily.jones@air.inc,Designer,Startup.io,(123) 456-7890,Event,India,07/01/2025
+Alice Smith,alice.smith@gmail.com,CEO,example corp,+1 800 555 1212,Website Visitor,Canada,07/19/2025
+Emily Jones,emily.jones@yahoo.com,product lead  ,Startup.io,N/A,Event,UK,01/30/2025
+Carol Taylor,carol.taylor@startup.io,Marketing Manager,   ,5551212,Referral,,2025-04-17
+Grace Johnson,grace.johnson@gmail.com,Head of Sales,GlobalTech,(123) 456-7890,LinkedIn,United States,04/24/2025
+David Jones,david.jones@yahoo.com,VP Mktg,,(123) 456-7890,Event,Canada,06-Jan-2025
+Carol Brown,carol.brown@business.co,Software Engineer,   ,N/A,Website Visitor,CA,05/18/2025
+Carol Wilson,carol.wilson@company.com,Data Analyst,Initech,123-456-7890,Website Visitor,India,08-Jul-2025
+David Lee,david.lee@gmail.com,CEO,Air Inc,call me,Product Signup,India,2025-06-11
+Ivy Taylor,ivy.taylor@yahoo.com,Marketing Manager,Example Corp,call me,Event,,2025-03-21
+Grace Taylor,grace.taylor@yahoo.com,head of sales,example corp,123-456-7890,Website Visitor,India,2025-04-28
+Henry Anderson,henry.anderson@gmail.com,Software Engineer,Umbrella Corp,5551212,Product Signup,UK,10/01/2024
+Grace Smith,grace.smith@company.com,Data Analyst,example corp,123-456-7890,Referral,CA,07-Dec-2024
+Carol Martinez,carol.martinez@yahoo.com,Product Lead,Umbrella Corp,5551212,Product Signup,UK,15-Oct-2024
+Henry Smith,henry.smith@business.co,Sr. Engineer,example corp,N/A,Product Signup,India,2025-06-20

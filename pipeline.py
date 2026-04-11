@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pandas as pd
+from enrichment import EnrichmentRequest, MockEnrichmentClient, enrich_with_retry
 
 
 EXPECTED_INPUT_COLUMNS = (
@@ -141,7 +142,27 @@ def run_pipeline(
     scoring_rules: dict[str, Any],
     enrichment_client: Any | None = None,
 ) -> PipelineResult:
-    raise NotImplementedError("Step 1 scaffold only: pipeline stages will be added iteratively.")
+    prepared = prepare_input_dataframe(raw_df)
+    normalized = normalize_leads(prepared)
+
+    accepted, rejected = split_accepted_and_rejected(normalized)
+    deduplicated, duplicate_rejected = deduplicate_leads(accepted)
+
+    enriched = enrich_leads(deduplicated, enrichment_client=enrichment_client)
+    scored = score_leads(enriched, scoring_rules)
+    clean_leads = finalize_clean_leads(scored)
+
+    rejected_leads = cast(
+        pd.DataFrame,
+        pd.concat([rejected, duplicate_rejected], ignore_index=True, sort=False),
+    )
+    summary_report = build_summary_report(raw_df, clean_leads, rejected_leads)
+
+    return PipelineResult(
+        clean_leads=clean_leads,
+        rejected_leads=rejected_leads,
+        summary_report=summary_report,
+    )
 
 
 def prepare_input_dataframe(raw_df: pd.DataFrame) -> pd.DataFrame:
@@ -257,6 +278,41 @@ def deduplicate_leads(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     )
 
     return deduplicated, duplicate_rejected
+
+
+def enrich_leads(df: pd.DataFrame, enrichment_client: Any | None = None) -> pd.DataFrame:
+    enriched = cast(pd.DataFrame, df.copy())
+
+    if enriched.empty:
+        for column in ENRICHMENT_COLUMNS:
+            if column not in enriched.columns:
+                enriched[column] = pd.Series(dtype=object)
+        return enriched
+
+    client = enrichment_client or MockEnrichmentClient()
+    responses = []
+
+    for _, row in enriched.iterrows():
+        request = EnrichmentRequest(
+            email=normalize_text(row.get("email")),
+            company=normalize_text(row.get("company")),
+            full_name=normalize_text(row.get("full_name")),
+            title=normalize_text(row.get("title")),
+            country=normalize_text(row.get("country")),
+            source_row_number=(
+                int(row["source_row_number"])
+                if has_non_empty_value(row.get("source_row_number"))
+                else None
+            ),
+        )
+        responses.append(enrich_with_retry(client, request))
+
+    enriched["industry"] = [response.industry for response in responses]
+    enriched["company_size"] = [response.company_size for response in responses]
+    enriched["company_domain"] = [response.company_domain for response in responses]
+    enriched["enrichment_status"] = [response.enrichment_status for response in responses]
+
+    return enriched
 
 def score_leads(df: pd.DataFrame, scoring_rules: dict[str, Any]) -> pd.DataFrame:
     scored = cast(pd.DataFrame, df.copy())
