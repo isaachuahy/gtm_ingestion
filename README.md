@@ -42,6 +42,92 @@ The pipeline expects a CSV with these columns:
 - `Country`
 - `Created At`
 
+
+## How to run
+
+Create and activate a virtual environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the pipeline:
+
+```bash
+python main.py
+```
+
+Outputs are written to `outputs/`.
+
+
+## Assumptions
+
+- input arrives as a single local CSV with a fixed column contract and is small enough to process in memory with pandas
+- normalized email is the primary acceptance and deduplication key for this exercise
+- `salesforce_ready` is intentionally narrower than `accepted`
+- accepted leads may still be useful even if they need remediation before Salesforce import
+- enrichment is mocked and deterministic, so the pipeline focuses on integration shape rather than provider accuracy
+- email is sufficient for enrichment so transcient errors are handled. But did not handle case if provider does not have enriched information
+- scoring rules in `scoring_rules.json` represent current business priorities, and rule order is intentional for first-match categories
+- Salesforce custom field names shown here are illustrative but concrete enough to demonstrate export mapping shape
+
+## How To Scale / Productionize
+
+### Data Input
+
+- move from a single local CSV to configurable input sources such as S3, GCS, or a managed upload endpoint
+- add stronger schema validation, contract versioning, and file-level quality checks before processing begins
+- support multiple input batches with run IDs and idempotent reprocessing
+
+### Latency And Throughput
+
+- keep the current batch design for periodic lead imports where end-to-end latency is measured in minutes, not milliseconds
+- if volume grows, batch enrichment calls where the provider allows it and add concurrency with rate-limit awareness
+- add caching for repeated company/domain lookups to reduce unnecessary provider calls
+
+### Batch Vs Streaming
+
+- batch is the right default for this assignment because the input is file-based and the downstream system is a CRM bulk import workflow
+- move to streaming only if there is a real near-real-time requirement such as immediate sales routing or live lead qualification
+- if streaming becomes necessary, use a queue or event bus and keep normalization, enrichment, scoring, and export as separate workers
+
+### Database And Storage
+
+- persist raw rows, normalized rows, enrichment attempts, scored rows, rejected rows, and export artifacts in durable storage
+- store run metadata and rule versions so outputs are auditable and reproducible
+- add a relational database or warehouse for reporting, remediation workflows, and downstream analytics
+
+### Provider And Retry Resilience
+
+- replace the mock client with real provider adapters behind the same request/response boundary
+- add structured retries with backoff, timeout handling, and provider-specific error classification
+- capture failed enrichments for replay instead of relying only on in-memory retry
+
+### Salesforce Integration
+
+- replace CSV-only export with Salesforce Bulk API integration
+- externalize field mappings so org-specific schema changes do not require code changes
+- capture sync status, failed records, and retryable export errors separately from transformation logic
+
+### Observability And Operations
+
+- add structured logging, metrics, and alerting around rejection rates, enrichment success rates, and scoring distribution
+- surface data quality reports so unusual drops in readiness or enrichment can be investigated quickly
+- add automated regression tests for representative messy input samples and contract-level output checks
+
+## Notes
+
+- designed for local batch use, not high-scale streaming
+- enrichment is mocked for the exercise and can be replaced with real providers later
+- clean lead retention and Salesforce export are intentionally treated as separate concerns
+
 ## Processing stages
 
 1. prepare input schema
@@ -173,86 +259,3 @@ Current field mapping:
 
 `score_reasons` is stored internally as a list and serialized into a semicolon-delimited string in the Salesforce export.
 
-## How to run
-
-Create and activate a virtual environment:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run the pipeline:
-
-```bash
-python main.py
-```
-
-Outputs are written to `outputs/`.
-
-## Assumptions
-
-- input arrives as a single local CSV with a fixed column contract and is small enough to process in memory with pandas
-- normalized email is the primary acceptance and deduplication key for this exercise
-- `salesforce_ready` is intentionally narrower than `accepted`
-- accepted leads may still be useful even if they need remediation before Salesforce import
-- enrichment is mocked and deterministic, so the pipeline focuses on integration shape rather than provider accuracy
-- email is sufficient for enrichment so transcient errors are handled. But did not handle case if provider does not have enriched information
-- scoring rules in `scoring_rules.json` represent current business priorities, and rule order is intentional for first-match categories
-- Salesforce custom field names shown here are illustrative but concrete enough to demonstrate export mapping shape
-
-## How To Scale / Productionize
-
-### Data Input
-
-- move from a single local CSV to configurable input sources such as S3, GCS, or a managed upload endpoint
-- add stronger schema validation, contract versioning, and file-level quality checks before processing begins
-- support multiple input batches with run IDs and idempotent reprocessing
-
-### Latency And Throughput
-
-- keep the current batch design for periodic lead imports where end-to-end latency is measured in minutes, not milliseconds
-- if volume grows, batch enrichment calls where the provider allows it and add concurrency with rate-limit awareness
-- add caching for repeated company/domain lookups to reduce unnecessary provider calls
-
-### Batch Vs Streaming
-
-- batch is the right default for this assignment because the input is file-based and the downstream system is a CRM bulk import workflow
-- move to streaming only if there is a real near-real-time requirement such as immediate sales routing or live lead qualification
-- if streaming becomes necessary, use a queue or event bus and keep normalization, enrichment, scoring, and export as separate workers
-
-### Database And Storage
-
-- persist raw rows, normalized rows, enrichment attempts, scored rows, rejected rows, and export artifacts in durable storage
-- store run metadata and rule versions so outputs are auditable and reproducible
-- add a relational database or warehouse for reporting, remediation workflows, and downstream analytics
-
-### Provider And Retry Resilience
-
-- replace the mock client with real provider adapters behind the same request/response boundary
-- add structured retries with backoff, timeout handling, and provider-specific error classification
-- capture failed enrichments for replay instead of relying only on in-memory retry
-
-### Salesforce Integration
-
-- replace CSV-only export with Salesforce Bulk API integration
-- externalize field mappings so org-specific schema changes do not require code changes
-- capture sync status, failed records, and retryable export errors separately from transformation logic
-
-### Observability And Operations
-
-- add structured logging, metrics, and alerting around rejection rates, enrichment success rates, and scoring distribution
-- surface data quality reports so unusual drops in readiness or enrichment can be investigated quickly
-- add automated regression tests for representative messy input samples and contract-level output checks
-
-## Notes
-
-- designed for local batch use, not high-scale streaming
-- enrichment is mocked for the exercise and can be replaced with real providers later
-- clean lead retention and Salesforce export are intentionally treated as separate concerns
